@@ -4,7 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRef } from 'react';
+import { useRef, useCallback } from 'react';
 import { toPng } from 'html-to-image';
 
 export default function CertificatePreview() {
@@ -13,13 +13,13 @@ export default function CertificatePreview() {
   const asalKota = searchParams.get('asalKota') || '';
   const certificateRef = useRef<HTMLDivElement>(null);
 
-  const handleDownload = async () => {
+  const handleDownload = useCallback(async () => {
     if (!certificateRef.current) return;
     
     try {
       const dataUrl = await toPng(certificateRef.current, { 
-        backgroundColor: null as unknown as string, // Transparent background
-        pixelRatio: 2 // Higher quality
+        backgroundColor: null as unknown as string,
+        pixelRatio: 2
       });
       
       const link = document.createElement('a');
@@ -31,7 +31,7 @@ export default function CertificatePreview() {
     } catch (error) {
       console.error('Error generating image:', error);
     }
-  };
+  }, [namaClub]);
 
   return (
     <div className="min-h-screen bg-gray-100 py-12 px-4">
@@ -43,38 +43,44 @@ export default function CertificatePreview() {
           </p>
         </div>
         
-        <div className="relative" ref={certificateRef}>
-          {/* Certificate Image */}
-          <div className="relative">
-            <div className="relative w-full h-auto">
-              <Image 
-                src="/vespa-certificate-template.jpeg" 
-                alt="Sertifikat Batu Vespa Fest 2025"
-                width={1200}
-                height={800}
-                className="w-full h-auto rounded-lg shadow-lg"
-                priority
-              />
-            </div>
+        <div className="relative overflow-hidden" ref={certificateRef}>
+          {/* Certificate container with fixed aspect ratio */}
+          <div className="relative w-full" style={{ aspectRatio: '1200/800' }}>
+            <Image 
+              src="/vespa-certificate-template.jpeg" 
+              alt="Sertifikat Batu Vespa Fest 2025"
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 1200px"
+              className="object-contain rounded-lg shadow-lg"
+              priority
+            />
             
-            {/* Overlay Text - Positioned over white input boxes */}
-            <div className="absolute inset-0">
+            {/* Overlay Text Container */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
               {/* First white box - Nama Club */}
               <div 
-                className="absolute left-1/2 transform -translate-x-1/2"
-                style={{ top: '49%' }}
+                className="absolute w-3/4 mx-auto text-center"
+                style={{ 
+                  top: '51.5%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)'
+                }}
               >
-                <p className="text-2xl font-medium text-center text-gray-800">
+                <p className="text-xs xs:text-lg sm:text-xl md:text-2xl font-medium text-center text-gray-800 break-words px-1">
                   {namaClub || ' '}
                 </p>
               </div>
               
               {/* Second white box - Asal Kota */}
               <div 
-                className="absolute left-1/2 transform -translate-x-1/2"
-                style={{ top: '56%' }}
+                className="absolute w-3/4 mx-auto text-center"
+                style={{ 
+                  top: '58.5%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)'
+                }}
               >
-                <p className="text-2xl font-medium text-center text-gray-800">
+                <p className="text-xs xs:text-lg sm:text-xl md:text-2xl font-medium text-center text-gray-800 break-words px-1">
                   {asalKota || ' '}
                 </p>
               </div>

@@ -16,7 +16,7 @@ export function CertificateForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Navigate to preview page with query parameters
+    // Navigate to thank you page with query parameters
     router.push(`/preview?namaClub=${encodeURIComponent(formData.namaClub)}&asalKota=${encodeURIComponent(formData.asalKota)}`);
   };
 
