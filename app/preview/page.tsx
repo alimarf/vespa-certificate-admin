@@ -1,72 +1,160 @@
 'use client';
 
+'use client';
+
 import { useSearchParams } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRef, useCallback, Suspense, useState, useEffect } from 'react';
+import { useRef, useCallback, useState, useEffect } from 'react';
 import { toPng } from 'html-to-image';
+import dynamic from 'next/dynamic';
 
 function CertificateContent() {
   const searchParams = useSearchParams();
   const namaPeserta = searchParams.get('namaPeserta') || '';
   const desc = searchParams.get('desc') || '';
   const certificateRef = useRef<HTMLDivElement>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
 
   const handleDownload = useCallback(async () => {
-    if (!certificateRef.current || isLoading) return;
+    if (!certificateRef.current || isLoading || !isImageLoaded) return;
     
     try {
       setIsLoading(true);
       setIsDownloading(true);
       
-      // Small delay to ensure any pending renders complete
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Force a reflow to ensure all styles are applied
+      await new Promise(resolve => requestAnimationFrame(resolve));
       
-      const dataUrl = await toPng(certificateRef.current, { 
-        backgroundColor: null as unknown as string,
-        pixelRatio: 2,
-        cacheBust: true
-      });
+      // Additional delay to ensure rendering is complete
+      await new Promise(resolve => setTimeout(resolve, 300));
       
+      // Ensure the image is fully loaded
+      const img = certificateRef.current.querySelector('img');
+      if (img && !img.complete) {
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => resolve();
+          img.onerror = () => reject(new Error('Image failed to load'));
+        });
+      }
+      
+      // Force another reflow before capture
+      await new Promise(resolve => requestAnimationFrame(resolve));
+      
+      // Generate the image with retry logic
+      const generateImage = async (attempt = 0): Promise<string> => {
+        try {
+          return await toPng(certificateRef.current!, { 
+            backgroundColor: null as unknown as string,
+            pixelRatio: 2,
+            cacheBust: true,
+            quality: 1.0
+          });
+        } catch (error) {
+          if (attempt < 2) { // Retry up to 2 times
+            await new Promise(resolve => setTimeout(resolve, 300));
+            return generateImage(attempt + 1);
+          }
+          throw error;
+        }
+      };
+      
+      const dataUrl = await generateImage();
+      
+      // Create and trigger download
       const link = document.createElement('a');
       const fileName = `sertifikat-${namaPeserta || 'batu-vespa-fest'}.png`;
       
-      // Convert data URL to blob
+      // Use a different approach for better mobile support
       const response = await fetch(dataUrl);
       const blob = await response.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
+      const blobUrl = URL.createObjectURL(blob);
       
       link.href = blobUrl;
       link.download = fileName;
+      link.style.display = 'none';
       document.body.appendChild(link);
       
-      // Trigger download
-      link.click();
+      // Use a more reliable click method
+      const clickEvent = new MouseEvent('click', {
+        view: window,
+        bubbles: true,
+        cancelable: true
+      });
+      
+      link.dispatchEvent(clickEvent);
       
       // Clean up
       setTimeout(() => {
         document.body.removeChild(link);
-        window.URL.revokeObjectURL(blobUrl);
+        URL.revokeObjectURL(blobUrl);
         setIsLoading(false);
         setIsDownloading(false);
-      }, 100);
+      }, 200);
       
     } catch (error) {
       console.error('Error generating image:', error);
       setIsLoading(false);
       setIsDownloading(false);
     }
-  }, [certificateRef, namaPeserta, isLoading]);
+  }, [certificateRef, namaPeserta, isLoading, isImageLoaded]);
 
-  // Set loading to false when image is loaded
-  useEffect(() => {
-    if (certificateRef.current) {
-      setIsLoading(false);
-    }
+  // Handle image load state with better error handling
+  const handleImageLoad = useCallback(() => {
+    const handleLoad = () => {
+      // Double check the image is actually loaded
+      const img = certificateRef.current?.querySelector('img');
+      if (img && img.complete && img.naturalWidth > 0) {
+        // Add a small delay to ensure all rendering is complete
+        setTimeout(() => {
+          setIsImageLoaded(true);
+          setIsLoading(false);
+        }, 200);
+      } else {
+        // If not properly loaded, retry
+        handleImageLoad();
+      }
+    };
+    
+    // Use double requestAnimationFrame to ensure all paints are done
+    requestAnimationFrame(() => {
+      requestAnimationFrame(handleLoad);
+    });
   }, []);
+
+  // Set up initial loading state with better checks
+  useEffect(() => {
+    const checkImage = () => {
+      const img = certificateRef.current?.querySelector('img');
+      if (img) {
+        if (img.complete && img.naturalWidth > 0) {
+          handleImageLoad();
+        } else {
+          img.onload = handleImageLoad;
+          img.onerror = () => {
+            console.error('Error loading certificate image');
+            setIsLoading(false);
+          };
+        }
+      } else {
+        // If no image found, retry after a short delay
+        setTimeout(checkImage, 100);
+      }
+    };
+    
+    const timer = setTimeout(checkImage, 100);
+    return () => {
+      clearTimeout(timer);
+      const img = certificateRef.current?.querySelector('img');
+      if (img) {
+        img.onload = null;
+        img.onerror = null;
+      }
+    };
+  }, [handleImageLoad]);
 
   return (
     <div className="min-h-screen bg-gray-100 py-12 px-4">
@@ -88,8 +176,10 @@ function CertificateContent() {
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 1200px"
               className="object-contain rounded-lg shadow-lg"
               priority
+              onLoadingComplete={handleImageLoad}
               onError={() => {
                 console.error('Error loading certificate image');
+                setIsLoading(false);
               }}
             />
             
@@ -132,7 +222,7 @@ function CertificateContent() {
           </Button>
           <Button 
             onClick={handleDownload}
-            disabled={isLoading || isDownloading}
+            disabled={isLoading || isDownloading || !isImageLoaded} 
             className={`relative ${isLoading || isDownloading ? 'opacity-75 cursor-not-allowed' : ''}`}
           >
             {isDownloading ? (
@@ -152,17 +242,22 @@ function CertificateContent() {
   );
 }
 
-export default function CertificatePreview() {
-  return (
-    <Suspense fallback={
+// Dynamically import the CertificateContent component with SSR disabled
+const CertificateContentDynamic = dynamic(
+  () => Promise.resolve(CertificateContent),
+  { 
+    ssr: false,
+    loading: () => (
       <div className="min-h-screen bg-gray-100 py-12 px-4 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
           <p>Memuat sertifikat...</p>
         </div>
       </div>
-    }>
-      <CertificateContent />
-    </Suspense>
-  );
+    )
+  }
+);
+
+export default function CertificatePreview() {
+  return <CertificateContentDynamic />;
 }
