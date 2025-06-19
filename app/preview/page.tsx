@@ -1,159 +1,125 @@
 'use client';
 
-'use client';
-
 import { useSearchParams } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import Link from 'next/link';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { useRef, useCallback, useState, useEffect } from 'react';
-import { toPng } from 'html-to-image';
 import dynamic from 'next/dynamic';
 
-function CertificateContent() {
-  const searchParams = useSearchParams();
-  const namaPeserta = searchParams.get('namaPeserta') || '';
-  const desc = searchParams.get('desc') || '';
+type CertificateContentProps = {
+  namaPeserta?: string;
+  desc?: string;
+};
+
+function CertificateContent({ namaPeserta, desc }: CertificateContentProps) {
   const certificateRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
 
-  const handleDownload = useCallback(async () => {
-    if (!certificateRef.current || isLoading || !isImageLoaded) return;
+  // Handle image load with requestAnimationFrame to ensure UI is ready
+  const handleImageLoad = useCallback(() => {
+    requestAnimationFrame(() => {
+      setIsImageLoaded(true);
+      setIsLoading(false);
+    });
+  }, []);
+
+  const handleDownload = useCallback(async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
+    
+    if (isLoading || isDownloading || !isImageLoaded) return;
     
     try {
-      setIsLoading(true);
       setIsDownloading(true);
       
-      // Force a reflow to ensure all styles are applied
-      await new Promise(resolve => requestAnimationFrame(resolve));
+      // Create a canvas to draw the certificate
+      const canvas = document.createElement('canvas');
+      canvas.width = 1200;  // Match the certificate aspect ratio
+      canvas.height = 800;
+      const ctx = canvas.getContext('2d');
       
-      // Additional delay to ensure rendering is complete
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      // Ensure the image is fully loaded
-      const img = certificateRef.current.querySelector('img');
-      if (img && !img.complete) {
-        await new Promise<void>((resolve, reject) => {
-          img.onload = () => resolve();
-          img.onerror = () => reject(new Error('Image failed to load'));
-        });
+      if (!ctx) {
+        throw new Error('Could not create canvas context');
       }
       
-      // Force another reflow before capture
-      await new Promise(resolve => requestAnimationFrame(resolve));
+      // Create a new image for the certificate background
+      const backgroundImg = new window.Image();
+      backgroundImg.crossOrigin = 'anonymous';
       
-      // Generate the image with retry logic
-      const generateImage = async (attempt = 0): Promise<string> => {
-        try {
-          return await toPng(certificateRef.current!, { 
-            backgroundColor: null as unknown as string,
-            pixelRatio: 2,
-            cacheBust: true,
-            quality: 1.0
-          });
-        } catch (error) {
-          if (attempt < 2) { // Retry up to 2 times
-            await new Promise(resolve => setTimeout(resolve, 300));
-            return generateImage(attempt + 1);
-          }
-          throw error;
-        }
-      };
-      
-      const dataUrl = await generateImage();
-      
-      // Create and trigger download
-      const link = document.createElement('a');
-      const fileName = `sertifikat-${namaPeserta || 'batu-vespa-fest'}.png`;
-      
-      // Use a different approach for better mobile support
-      const response = await fetch(dataUrl);
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      
-      link.href = blobUrl;
-      link.download = fileName;
-      link.style.display = 'none';
-      document.body.appendChild(link);
-      
-      // Use a more reliable click method
-      const clickEvent = new MouseEvent('click', {
-        view: window,
-        bubbles: true,
-        cancelable: true
+      // Wait for the background to load
+      await new Promise<void>((resolve, reject) => {
+        backgroundImg.onload = () => resolve();
+        backgroundImg.onerror = () => reject(new Error('Failed to load certificate background'));
+        backgroundImg.src = '/template-vespa-certificate.jpeg';
       });
       
-      link.dispatchEvent(clickEvent);
+      // Draw the background image
+      ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
+      
+      // Get the text elements
+      const nameText = namaPeserta || 'Peserta';
+      const descText = desc || 'Vespa Club';
+      
+      // Set font styles for text
+      ctx.font = 'bold 36px Arial';
+      ctx.fillStyle = 'black';
+      ctx.textAlign = 'center';
+      
+      // Draw name text
+      ctx.fillText(nameText, canvas.width / 2, 375);
+      
+      // Draw description text
+      ctx.fillText(descText, canvas.width / 2, 425);
+      
+      // Convert canvas to data URL with high quality
+      const dataUrl = canvas.toDataURL('image/png', 1.0);
+      
+      // Create download link
+      const link = document.createElement('a');
+      link.download = `sertifikat-${nameText.replace(/[^a-z0-9\-]/gi, '_').toLowerCase()}.png`;
+      link.href = dataUrl;
+      link.style.display = 'none';
+      
+      // Add to DOM and trigger download
+      document.body.appendChild(link);
+      link.click();
       
       // Clean up
       setTimeout(() => {
         document.body.removeChild(link);
-        URL.revokeObjectURL(blobUrl);
-        setIsLoading(false);
         setIsDownloading(false);
-      }, 200);
+      }, 100);
       
     } catch (error) {
-      console.error('Error generating image:', error);
-      setIsLoading(false);
+      console.error('Error generating certificate:', error);
       setIsDownloading(false);
     }
-  }, [certificateRef, namaPeserta, isLoading, isImageLoaded]);
+  }, [namaPeserta, desc, isLoading, isDownloading, isImageLoaded]);
 
-  // Handle image load state with better error handling
-  const handleImageLoad = useCallback(() => {
-    const handleLoad = () => {
-      // Double check the image is actually loaded
-      const img = certificateRef.current?.querySelector('img');
-      if (img && img.complete && img.naturalWidth > 0) {
-        // Add a small delay to ensure all rendering is complete
-        setTimeout(() => {
-          setIsImageLoaded(true);
-          setIsLoading(false);
-        }, 200);
-      } else {
-        // If not properly loaded, retry
-        handleImageLoad();
-      }
-    };
-    
-    // Use double requestAnimationFrame to ensure all paints are done
-    requestAnimationFrame(() => {
-      requestAnimationFrame(handleLoad);
-    });
-  }, []);
-
-  // Set up initial loading state with better checks
+  // Monitor image loading
   useEffect(() => {
-    const checkImage = () => {
-      const img = certificateRef.current?.querySelector('img');
-      if (img) {
-        if (img.complete && img.naturalWidth > 0) {
-          handleImageLoad();
-        } else {
-          img.onload = handleImageLoad;
-          img.onerror = () => {
-            console.error('Error loading certificate image');
-            setIsLoading(false);
-          };
-        }
-      } else {
-        // If no image found, retry after a short delay
-        setTimeout(checkImage, 100);
-      }
-    };
+    const img = certificateRef.current?.querySelector('img');
     
-    const timer = setTimeout(checkImage, 100);
-    return () => {
-      clearTimeout(timer);
-      const img = certificateRef.current?.querySelector('img');
-      if (img) {
+    if (img) {
+      if (img.complete && img.naturalWidth > 0) {
+        handleImageLoad();
+      } else {
+        img.onload = () => handleImageLoad();
+        img.onerror = () => {
+          console.error('Error loading certificate image');
+          setIsLoading(false);
+        };
+      }
+      
+      return () => {
         img.onload = null;
         img.onerror = null;
-      }
-    };
+      };
+    }
   }, [handleImageLoad]);
 
   return (
@@ -166,9 +132,13 @@ function CertificateContent() {
           </p>
         </div>
         
-        <div className="relative overflow-hidden" ref={certificateRef}>
+        <div className="relative overflow-hidden">
           {/* Certificate container with fixed aspect ratio */}
-          <div className="relative w-full" style={{ aspectRatio: '1200/800' }}>
+          <div 
+            ref={certificateRef}
+            className="relative w-full" 
+            style={{ aspectRatio: '1200/800' }}
+          >
             <Image 
               src="/template-vespa-certificate.jpeg" 
               alt="Sertifikat Batu Vespa Fest 2025"
@@ -177,38 +147,29 @@ function CertificateContent() {
               className="object-contain rounded-lg shadow-lg"
               priority
               onLoadingComplete={handleImageLoad}
-              onError={() => {
-                console.error('Error loading certificate image');
-                setIsLoading(false);
+              style={{
+                objectFit: 'contain',
               }}
             />
             
-            {/* Overlay Text Container */}
+            {/* Text overlay */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              {/* First white box - Nama Club */}
+              {/* Name text */}
               <div 
-                className="absolute w-3/4 mx-auto text-center"
-                style={{ 
-                  top: '51.5%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)'
-                }}
+                className="absolute text-center"
+                style={{ top: '51%', left: '50%', transform: 'translate(-50%, -50%)' }}
               >
-                <p className="text-xs xs:text-lg sm:text-xl md:text-2xl font-medium text-center text-gray-800 break-words px-1">
+                <p className="font-bold text-xl md:text-2xl text-black">
                   {namaPeserta || ' '}
                 </p>
               </div>
               
-              {/* Second white box - Asal Kota */}
+              {/* Description text */}
               <div 
-                className="absolute w-3/4 mx-auto text-center"
-                style={{ 
-                  top: '58.5%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)'
-                }}
+                className="absolute text-center"
+                style={{ top: '58%', left: '50%', transform: 'translate(-50%, -50%)' }}
               >
-                <p className="text-xs xs:text-lg sm:text-xl md:text-2xl font-medium text-center text-gray-800 break-words px-1">
+                <p className="text-lg md:text-xl text-black">
                   {desc || ' '}
                 </p>
               </div>
@@ -216,25 +177,17 @@ function CertificateContent() {
           </div>
         </div>
         
-        <div className="mt-8 flex justify-center space-x-4">
+        <div className="flex gap-4 justify-center mt-8">
           <Button asChild variant="outline">
-            <Link href="/">Kembali ke Form</Link>
+            <Link href="/">Kembali</Link>
           </Button>
-          <Button 
+          
+          <Button
             onClick={handleDownload}
-            disabled={isLoading || isDownloading || !isImageLoaded} 
-            className={`relative ${isLoading || isDownloading ? 'opacity-75 cursor-not-allowed' : ''}`}
+            disabled={isLoading || isDownloading || !isImageLoaded}
+            className="bg-green-600 hover:bg-green-700"
           >
-            {isDownloading ? (
-              <>
-                <span className="animate-pulse">Menyiapkan unduhan...</span>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                </div>
-              </>
-            ) : (
-              'Download Sertifikat'
-            )}
+            {isDownloading ? 'Sedang Mengunduh...' : 'Unduh Sertifikat'}
           </Button>
         </div>
       </div>
@@ -243,7 +196,7 @@ function CertificateContent() {
 }
 
 // Dynamically import the CertificateContent component with SSR disabled
-const CertificateContentDynamic = dynamic(
+const CertificateContentDynamic = dynamic<CertificateContentProps>(
   () => Promise.resolve(CertificateContent),
   { 
     ssr: false,
@@ -259,5 +212,9 @@ const CertificateContentDynamic = dynamic(
 );
 
 export default function CertificatePreview() {
-  return <CertificateContentDynamic />;
+  const searchParams = useSearchParams();
+  const namaPeserta = searchParams?.get('namaPeserta') || '';
+  const desc = searchParams?.get('desc') || '';
+  
+  return <CertificateContentDynamic namaPeserta={namaPeserta} desc={desc} />;
 }
