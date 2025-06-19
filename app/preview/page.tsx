@@ -57,9 +57,23 @@ function CertificateContent() {
       const img = new window.Image();
       img.crossOrigin = 'anonymous';
       
+      // Preload the font
+      const font = new FontFace('Ancizar Serif', 'url(https://fonts.cdnfonts.com/s/100200/AncizarSerif.woff)');
+      let fontLoaded = false;
+      
+      try {
+        // Load the font first
+        const loadedFont = await font.load();
+        document.fonts.add(loadedFont);
+        fontLoaded = true;
+      } catch (fontError) {
+        console.error('Error loading font:', fontError);
+        // Continue with fallback font
+      }
+      
       // Wait for the image to load
       await new Promise<void>((resolve, reject) => {
-        const onLoad = () => {
+        const onLoad = async () => {
           // Clean up event listeners
           img.removeEventListener('load', onLoad);
           img.removeEventListener('error', onError);
@@ -68,38 +82,44 @@ function CertificateContent() {
             // Draw the certificate image
             ctx.drawImage(img, 0, 0, width, height);
             
-            // Draw the text on top - matching the preview's styling exactly
+            // Wait a small amount of time to ensure font is ready
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // Set text alignment
             ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
             
             // Check if mobile device
             const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+            const fontSize = isMobile ? 12 : 24;
+            
+            // Set the font
+            if (fontLoaded) {
+              ctx.font = `600 ${fontSize}px 'Ancizar Serif', serif`;
+            } else {
+              // Fallback font
+              ctx.font = `600 ${fontSize}px serif`;
+            }
             
             // Draw name - positioned to match preview (51.5% from top)
             if (namaPeserta) {
-              // Set font size based on device
-              ctx.font = isMobile ? 'bold 10px Arial' : 'bold 24px Arial';
-              ctx.fillStyle = 'black';
-              
-              // Calculate position (51.5% from top, centered horizontally)
+              ctx.fillStyle = 'rgb(31, 41, 55)';
               const nameX = width / 2;
-              const nameY = height * 0.53;
+              const nameY = height * 0.52;
               
               // Draw name with subtle outline for better readability
               ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
               ctx.lineWidth = 2;
-              ctx.strokeText(namaPeserta.toUpperCase(), nameX, nameY);
-              ctx.fillText(namaPeserta.toUpperCase(), nameX, nameY);
+              const nameText = namaPeserta.toUpperCase();
+              ctx.strokeText(nameText, nameX, nameY);
+              ctx.fillText(nameText, nameX, nameY);
             }
             
             // Draw description - positioned to match preview (59% from top)
             if (desc) {
-              // Set font size based on device
-              ctx.font = isMobile ? 'bold 10px Arial' : 'bold 24px Arial';
-              ctx.fillStyle = 'black';
-              
-              // Calculate position (59% from top, centered horizontally)
+              ctx.fillStyle = 'rgb(55, 65, 81)';
               const descX = width / 2;
-              const descY = height * 0.60;
+              const descY = height * 0.59;
               
               // Draw description with subtle outline for better readability
               ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
@@ -263,7 +283,7 @@ function CertificateContent() {
                       width: '80%'
                     }}
                   >
-                    <h2 className="text-[10px] md:text-2xl font-bold uppercase">
+                    <h2 className="certificate-name text-[12px] md:text-2xl uppercase text-gray-800">
                       {namaPeserta}
                     </h2>
                   </div>
@@ -279,7 +299,7 @@ function CertificateContent() {
                       width: '80%'
                     }}
                   >
-                    <p className="text-[10px] md:text-2xl font-bold">{desc}</p>
+                    <p className="certificate-desc text-[10px] md:text-2xl text-gray-700">{desc}</p>
                   </div>
                 )}
               </div>
