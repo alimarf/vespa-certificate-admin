@@ -26,16 +26,16 @@ function CertificateContent() {
       setIsLoading(true);
       setIsDownloading(true);
       
-      // Get the container and its dimensions
-      const container = certificateRef.current;
-      const width = container.offsetWidth;
-      const height = container.offsetHeight;
+      // No need to store container reference as we're using fixed dimensions
       
-      // Create a canvas with high DPI for better quality
-      const scale = 2; // Scale for better quality on high DPI screens
+      // Fixed dimensions for consistent output (A4 ratio: 1.414)
+      const targetWidth = 1200; // Fixed width for all devices
+      const targetHeight = 848; // 1200 / 1.414 (A4 ratio)
+      
+      // Create canvas with fixed dimensions
       const canvas = document.createElement('canvas');
-      canvas.width = width * scale;
-      canvas.height = height * scale;
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
       const ctx = canvas.getContext('2d', { willReadFrequently: true });
       
       if (!ctx) {
@@ -46,12 +46,10 @@ function CertificateContent() {
       ctx.fillStyle = 'white';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
-      // Scale the context to ensure crisp rendering
-      ctx.scale(scale, scale);
-      
-      // Improve text rendering quality
+      // Improve rendering quality
       ctx.imageSmoothingEnabled = true;
-      ctx.textRendering = 'optimizeLegibility';
+      ctx.imageSmoothingQuality = 'high';
+      ctx.textRendering = 'geometricPrecision';
       
       // Create a new image for the certificate
       const img = new window.Image();
@@ -79,8 +77,27 @@ function CertificateContent() {
           img.removeEventListener('error', onError);
           
           try {
-            // Draw the certificate image
-            ctx.drawImage(img, 0, 0, width, height);
+            // Draw the certificate image to fill the canvas while maintaining aspect ratio
+            const imgAspect = img.width / img.height;
+            const canvasAspect = canvas.width / canvas.height;
+            let drawWidth, drawHeight, offsetX, offsetY;
+            
+            if (imgAspect > canvasAspect) {
+              // Image is wider than canvas
+              drawHeight = canvas.height;
+              drawWidth = drawHeight * imgAspect;
+              offsetX = (canvas.width - drawWidth) / 2;
+              offsetY = 0;
+            } else {
+              // Image is taller than canvas
+              drawWidth = canvas.width;
+              drawHeight = drawWidth / imgAspect;
+              offsetX = 0;
+              offsetY = (canvas.height - drawHeight) / 2;
+            }
+            
+            // Draw the image centered and scaled to fit
+            ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
             
             // Wait a small amount of time to ensure font is ready
             await new Promise(resolve => setTimeout(resolve, 100));
@@ -89,9 +106,9 @@ function CertificateContent() {
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             
-            // Check if mobile device
+            // Use fixed font size for consistent output (12px on mobile, 24px on desktop)
             const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-            const fontSize = isMobile ? 12 : 24;
+            const fontSize = isMobile ? 24 : 24; // Increased from 10px to 12px for better mobile readability
             
             // Set the font
             if (fontLoaded) {
@@ -101,11 +118,11 @@ function CertificateContent() {
               ctx.font = `600 ${fontSize}px serif`;
             }
             
-            // Draw name - positioned to match preview (51.5% from top)
+            // Draw name - positioned to match preview (52% from top)
             if (namaPeserta) {
               ctx.fillStyle = 'rgb(31, 41, 55)';
-              const nameX = width / 2;
-              const nameY = height * 0.52;
+              const nameX = canvas.width / 2; // Center horizontally
+              const nameY = canvas.height * 0.52; // 52% from top
               
               // Draw name with subtle outline for better readability
               ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
@@ -115,11 +132,11 @@ function CertificateContent() {
               ctx.fillText(nameText, nameX, nameY);
             }
             
-            // Draw description - positioned to match preview (59% from top)
+            // Draw description - positioned to match preview (58% from top)
             if (desc) {
               ctx.fillStyle = 'rgb(55, 65, 81)';
-              const descX = width / 2;
-              const descY = height * 0.59;
+              const descX = canvas.width / 2; // Center horizontally
+              const descY = canvas.height * 0.59; // 58% from top
               
               // Draw description with subtle outline for better readability
               ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
@@ -147,11 +164,26 @@ function CertificateContent() {
         img.src = '/template-vespa-certificate.jpeg';
       });
       
-      // Convert canvas to blob
+      // Convert canvas to blob with consistent quality
       const blob = await new Promise<Blob>((resolve, reject) => {
         canvas.toBlob((result) => {
           if (result) {
-            resolve(result);
+            // If file size is too large, reduce quality
+            if (result.size > 1.5 * 1024 * 1024) { // If > 1.5MB
+              canvas.toBlob(
+                (compressed) => {
+                  if (compressed) {
+                    resolve(compressed);
+                  } else {
+                    resolve(result); // Fallback to original if compression fails
+                  }
+                },
+                'image/jpeg', // Use JPEG for better compression
+                0.85 // 85% quality
+              );
+            } else {
+              resolve(result);
+            }
           } else {
             reject(new Error('Canvas to Blob conversion failed'));
           }
@@ -277,13 +309,13 @@ function CertificateContent() {
                     className="text-center"
                     style={{
                       position: 'absolute',
-                      top: '51.5%',
+                      top: '52%',
                       left: '50%',
                       transform: 'translate(-50%, -50%)',
                       width: '80%'
                     }}
                   >
-                    <h2 className="certificate-name text-[12px] md:text-2xl uppercase text-gray-800">
+                    <h2 className="certificate-name text-[8px] md:text-2xl uppercase text-gray-800">
                       {namaPeserta}
                     </h2>
                   </div>
@@ -299,7 +331,7 @@ function CertificateContent() {
                       width: '80%'
                     }}
                   >
-                    <p className="certificate-desc text-[10px] md:text-2xl text-gray-700">{desc}</p>
+                    <p className="certificate-desc text-[8px] md:text-2xl text-gray-700">{desc}</p>
                   </div>
                 )}
               </div>
