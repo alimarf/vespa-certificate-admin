@@ -2,10 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 export function CertificateForm() {
   const router = useRouter();
@@ -59,58 +56,76 @@ export function CertificateForm() {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle>Batu Vespa Fest 2025</CardTitle>
-        <CardDescription>Masukkan detail untuk membuat sertifikat</CardDescription>
-      </CardHeader>
-      <CardContent>
+    <Card className="w-full max-w-md mx-auto border-0 shadow-lg overflow-hidden bg-gradient-to-br from-white/90 to-gray-50/90">
+      <div className="pl-6 text-black">
+        <h2 className="text-2xl font-bold font-sans">Batu Vespa Fest 2025</h2>
+        <p className="text-sm opacity-90 mt-1">Buat sertifikat kerenmu sekarang!</p>
+      </div>
+      
+      <CardContent className="p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <Label htmlFor="namaPeserta">Nama Peserta</Label>
-              <span className="text-xs text-muted-foreground">
+              <label htmlFor="namaPeserta" className="block text-sm font-medium text-gray-700">
+                Nama Kamu
+              </label>
+              <span className="text-xs text-gray-500">
                 {formData.namaPeserta.length}/{MAX_NAMA_PESERTA}
               </span>
             </div>
-            <Input
-              id="namaPeserta"
-              name="namaPeserta"
-              placeholder="Masukkan nama peserta"
-              value={formData.namaPeserta}
-              onChange={handleChange}
-              maxLength={MAX_NAMA_PESERTA}
-              className={errors.namaPeserta ? 'border-red-500' : ''}
-              required
-            />
-            {errors.namaPeserta && (
-              <p className="text-xs text-red-500">{errors.namaPeserta}</p>
-            )}
+            <div className="relative">
+              <input
+                id="namaPeserta"
+                name="namaPeserta"
+                placeholder="Tulis nama kamu di sini"
+                value={formData.namaPeserta}
+                onChange={handleChange}
+                maxLength={MAX_NAMA_PESERTA}
+                className={`w-full px-4 py-3 rounded-lg border ${
+                  errors.namaPeserta ? 'border-red-400' : 'border-gray-300'
+                } focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200`}
+                required
+              />
+              {errors.namaPeserta && (
+                <p className="mt-1 text-xs text-red-500">{errors.namaPeserta}</p>
+              )}
+            </div>
           </div>
-          <div className="space-y-2">
+          
+          <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <Label htmlFor="description">Deskripsi</Label>
-              <span className="text-xs text-muted-foreground">
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                Asal / Club
+              </label>
+              <span className="text-xs text-gray-500">
                 {formData.description.length}/{MAX_DESCRIPTION}
               </span>
             </div>
-            <Input
-              id="description"
-              name="description"
-              placeholder="cth: asal kota/nama club/independen"
-              value={formData.description}
-              onChange={handleChange}
-              maxLength={MAX_DESCRIPTION}
-              className={errors.description ? 'border-red-500' : ''}
-              required
-            />
-            {errors.description && (
-              <p className="text-xs text-red-500">{errors.description}</p>
-            )}
+            <div className="relative">
+              <input
+                id="description"
+                name="description"
+                placeholder="Contoh: Malang / Vespa Club Malang / Independen"
+                value={formData.description}
+                onChange={handleChange}
+                maxLength={MAX_DESCRIPTION}
+                className={`w-full px-4 py-3 rounded-lg border ${
+                  errors.description ? 'border-red-400' : 'border-gray-300'
+                } focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200`}
+                required
+              />
+              {errors.description && (
+                <p className="mt-1 text-xs text-red-500">{errors.description}</p>
+              )}
+            </div>
           </div>
-          <Button type="submit" className="w-full">
-            Buat Sertifikat
-          </Button>
+          
+          <button
+            type="submit"
+            className="w-full bg-gradient-to-r from-gray-600 to-gray-500 text-white py-3 px-6 rounded-lg font-medium hover:from-red-700 hover:to-red-600 transition-all duration-200 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 shadow-md hover:shadow-lg"
+          >
+            Buat Sertifikatku! 🚀
+          </button>
         </form>
       </CardContent>
     </Card>
