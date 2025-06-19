@@ -4,10 +4,10 @@ import { useSearchParams } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, Suspense } from 'react';
 import { toPng } from 'html-to-image';
 
-export default function CertificatePreview() {
+function CertificateContent() {
   const searchParams = useSearchParams();
   const namaClub = searchParams.get('namaClub') || '';
   const asalKota = searchParams.get('asalKota') || '';
@@ -98,5 +98,20 @@ export default function CertificatePreview() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CertificatePreview() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-100 py-12 px-4 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p>Memuat sertifikat...</p>
+        </div>
+      </div>
+    }>
+      <CertificateContent />
+    </Suspense>
   );
 }
