@@ -25,17 +25,27 @@ function CertificateContent() {
   }, [imageLoaded, setIsLoading]);
 
   const handleDownload = useCallback(async () => {
-    if (!certificateRef.current || isLoading) return;
+    if (!certificateRef.current || isLoading || isDownloading) return;
     
     try {
-      setIsLoading(true);
+      setIsDownloading(true);
       
       // Small delay to ensure any pending renders complete
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Ensure the image is fully loaded
+      const image = certificateRef.current.querySelector('img');
+      if (image && !image.complete) {
+        await new Promise<void>((resolve, reject) => {
+          image.onload = () => resolve();
+          image.onerror = () => reject(new Error('Image failed to load'));
+        });
+      }
       
       const dataUrl = await toPng(certificateRef.current, { 
         backgroundColor: null as unknown as string,
-        pixelRatio: 2
+        pixelRatio: 2,
+        cacheBust: true // Ensure we're not getting a cached version
       });
       
       const link = document.createElement('a');
@@ -57,20 +67,26 @@ function CertificateContent() {
       // Trigger download
       link.dispatchEvent(clickEvent);
       
-      // Clean up
+      // Clean up after a longer delay to ensure download starts
       setTimeout(() => {
-        document.body.removeChild(link);
-        setIsLoading(false);
-        // Revoke the object URL to free up memory
-        URL.revokeObjectURL(dataUrl);
+        // Remove the link from the DOM
+        if (document.body.contains(link)) {
+          document.body.removeChild(link);
+        }
+        
+        // Revoke the object URL after a longer delay
+        setTimeout(() => {
+          URL.revokeObjectURL(dataUrl);
+        }, 2000);
+        
+        setIsDownloading(false);
       }, 1000);
       
     } catch (error) {
       console.error('Error generating image:', error);
-      setIsLoading(false);
       setIsDownloading(false);
     }
-  }, [namaClub, isLoading]);
+  }, [namaClub, isLoading, isDownloading]);
 
   return (
     <div className="min-h-screen bg-gray-100 py-12 px-4">
