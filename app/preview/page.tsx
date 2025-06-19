@@ -9,68 +9,64 @@ import { toPng } from 'html-to-image';
 
 function CertificateContent() {
   const searchParams = useSearchParams();
-  const namaClub = searchParams.get('namaClub') || '';
-  const asalKota = searchParams.get('asalKota') || '';
+  const namaPeserta = searchParams.get('namaPeserta') || '';
+  const desc = searchParams.get('desc') || '';
   const certificateRef = useRef<HTMLDivElement>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-
-  // Set loading to false when image is loaded
-  useEffect(() => {
-    if (imageLoaded) {
-      const timer = setTimeout(() => setIsLoading(false), 300);
-      return () => clearTimeout(timer);
-    }
-  }, [imageLoaded, setIsLoading]);
 
   const handleDownload = useCallback(async () => {
     if (!certificateRef.current || isLoading) return;
     
     try {
       setIsLoading(true);
+      setIsDownloading(true);
       
       // Small delay to ensure any pending renders complete
       await new Promise(resolve => setTimeout(resolve, 100));
       
       const dataUrl = await toPng(certificateRef.current, { 
         backgroundColor: null as unknown as string,
-        pixelRatio: 2
+        pixelRatio: 2,
+        cacheBust: true
       });
       
       const link = document.createElement('a');
-      const fileName = `sertifikat-${namaClub || 'batu-vespa-fest'}.png`;
+      const fileName = `sertifikat-${namaPeserta || 'batu-vespa-fest'}.png`;
       
-      link.setAttribute('download', fileName);
-      link.setAttribute('href', dataUrl);
+      // Convert data URL to blob
+      const response = await fetch(dataUrl);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
       
-      // Add to DOM temporarily
+      link.href = blobUrl;
+      link.download = fileName;
       document.body.appendChild(link);
       
-      // Create and dispatch click event
-      const clickEvent = new MouseEvent('click', {
-        view: window,
-        bubbles: true,
-        cancelable: true
-      });
-      
       // Trigger download
-      link.dispatchEvent(clickEvent);
+      link.click();
       
       // Clean up
       setTimeout(() => {
         document.body.removeChild(link);
+        window.URL.revokeObjectURL(blobUrl);
         setIsLoading(false);
-        // Revoke the object URL to free up memory
-        URL.revokeObjectURL(dataUrl);
-      }, 1000);
+        setIsDownloading(false);
+      }, 100);
       
     } catch (error) {
       console.error('Error generating image:', error);
       setIsLoading(false);
       setIsDownloading(false);
     }
-  }, [namaClub, isLoading]);
+  }, [certificateRef, namaPeserta, isLoading]);
+
+  // Set loading to false when image is loaded
+  useEffect(() => {
+    if (certificateRef.current) {
+      setIsLoading(false);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-100 py-12 px-4">
@@ -86,16 +82,14 @@ function CertificateContent() {
           {/* Certificate container with fixed aspect ratio */}
           <div className="relative w-full" style={{ aspectRatio: '1200/800' }}>
             <Image 
-              src="/vespa-certificate-template.jpeg" 
+              src="/template-vespa-certificate.jpeg" 
               alt="Sertifikat Batu Vespa Fest 2025"
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 1200px"
               className="object-contain rounded-lg shadow-lg"
               priority
-              onLoadingComplete={() => setImageLoaded(true)}
               onError={() => {
                 console.error('Error loading certificate image');
-                setImageLoaded(true);
               }}
             />
             
@@ -111,7 +105,7 @@ function CertificateContent() {
                 }}
               >
                 <p className="text-xs xs:text-lg sm:text-xl md:text-2xl font-medium text-center text-gray-800 break-words px-1">
-                  {namaClub || ' '}
+                  {namaPeserta || ' '}
                 </p>
               </div>
               
@@ -125,7 +119,7 @@ function CertificateContent() {
                 }}
               >
                 <p className="text-xs xs:text-lg sm:text-xl md:text-2xl font-medium text-center text-gray-800 break-words px-1">
-                  {asalKota || ' '}
+                  {desc || ' '}
                 </p>
               </div>
             </div>

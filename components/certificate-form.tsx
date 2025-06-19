@@ -10,29 +10,29 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 export function CertificateForm() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    namaClub: '',
-    asalKota: ''
+    namaPeserta: '',
+    description: ''
   });
   
   const [errors, setErrors] = useState({
-    namaClub: '',
-    asalKota: ''
+    namaPeserta: '',
+    description: ''
   });
   
-  const MAX_NAMA_CLUB = 15;
-  const MAX_ASAL_KOTA = 20;
+  const MAX_NAMA_PESERTA = 15;
+  const MAX_DESCRIPTION = 20;
 
   const validateForm = () => {
     let isValid = true;
-    const newErrors = { namaClub: '', asalKota: '' };
+    const newErrors = { namaPeserta: '', description: '' };
     
-    if (formData.namaClub.length > MAX_NAMA_CLUB) {
-      newErrors.namaClub = `Maksimal ${MAX_NAMA_CLUB} karakter`;
+    if (formData.namaPeserta.length > MAX_NAMA_PESERTA) {
+      newErrors.namaPeserta = `Maksimal ${MAX_NAMA_PESERTA} karakter`;
       isValid = false;
     }
     
-    if (formData.asalKota.length > MAX_ASAL_KOTA) {
-      newErrors.asalKota = `Maksimal ${MAX_ASAL_KOTA} karakter`;
+    if (formData.description.length > MAX_DESCRIPTION) {
+      newErrors.description = `Maksimal ${MAX_DESCRIPTION} karakter`;
       isValid = false;
     }
     
@@ -47,7 +47,7 @@ export function CertificateForm() {
       return;
     }
     
-    router.push(`/preview?namaClub=${encodeURIComponent(formData.namaClub)}&asalKota=${encodeURIComponent(formData.asalKota)}`);
+    router.push(`/preview?namaPeserta=${encodeURIComponent(formData.namaPeserta)}&desc=${encodeURIComponent(formData.description)}`);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,44 +68,44 @@ export function CertificateForm() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <Label htmlFor="namaClub">Nama Club</Label>
+              <Label htmlFor="namaPeserta">Nama Peserta</Label>
               <span className="text-xs text-muted-foreground">
-                {formData.namaClub.length}/{MAX_NAMA_CLUB}
+                {formData.namaPeserta.length}/{MAX_NAMA_PESERTA}
               </span>
             </div>
             <Input
-              id="namaClub"
-              name="namaClub"
-              placeholder="Masukkan nama club"
-              value={formData.namaClub}
+              id="namaPeserta"
+              name="namaPeserta"
+              placeholder="Masukkan nama peserta"
+              value={formData.namaPeserta}
               onChange={handleChange}
-              maxLength={MAX_NAMA_CLUB}
-              className={errors.namaClub ? 'border-red-500' : ''}
+              maxLength={MAX_NAMA_PESERTA}
+              className={errors.namaPeserta ? 'border-red-500' : ''}
               required
             />
-            {errors.namaClub && (
-              <p className="text-xs text-red-500">{errors.namaClub}</p>
+            {errors.namaPeserta && (
+              <p className="text-xs text-red-500">{errors.namaPeserta}</p>
             )}
           </div>
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <Label htmlFor="asalKota">Asal Kota</Label>
+              <Label htmlFor="description">Deskripsi</Label>
               <span className="text-xs text-muted-foreground">
-                {formData.asalKota.length}/{MAX_ASAL_KOTA}
+                {formData.description.length}/{MAX_DESCRIPTION}
               </span>
             </div>
             <Input
-              id="asalKota"
-              name="asalKota"
-              placeholder="Masukkan asal kota"
-              value={formData.asalKota}
+              id="description"
+              name="description"
+              placeholder="cth: asal kota/nama club/independen"
+              value={formData.description}
               onChange={handleChange}
-              maxLength={MAX_ASAL_KOTA}
-              className={errors.asalKota ? 'border-red-500' : ''}
+              maxLength={MAX_DESCRIPTION}
+              className={errors.description ? 'border-red-500' : ''}
               required
             />
-            {errors.asalKota && (
-              <p className="text-xs text-red-500">{errors.asalKota}</p>
+            {errors.description && (
+              <p className="text-xs text-red-500">{errors.description}</p>
             )}
           </div>
           <Button type="submit" className="w-full">
