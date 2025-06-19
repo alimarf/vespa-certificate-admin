@@ -1,8 +1,6 @@
 'use client';
 
-'use client';
-
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import Link from 'next/link';
 // import Image from 'next/image';
@@ -19,8 +17,10 @@ function CertificateContent() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
 
+  const router = useRouter();
+
   const handleDownload = useCallback(async () => {
-    if (!certificateRef.current || isLoading || !isImageLoaded) return;
+    if (!certificateRef.current || isLoading || isDownloading || !isImageLoaded) return;
     
     try {
       setIsLoading(true);
@@ -149,12 +149,14 @@ function CertificateContent() {
       link.click();
       
       // Clean up
+      // Clean up and navigate to thank you page after a short delay
       setTimeout(() => {
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
         setIsLoading(false);
         setIsDownloading(false);
-      }, 100);
+        router.push('/thankyou');
+      }, 300); // Slightly longer delay to ensure download starts
       
     } catch (error) {
       console.error('Error generating certificate:', error);
@@ -184,7 +186,7 @@ function CertificateContent() {
         setIsDownloading(false);
       }
     }
-  }, [certificateRef, namaPeserta, desc, isLoading, isImageLoaded]);
+  }, [certificateRef, namaPeserta, desc, isLoading, isDownloading, isImageLoaded, router]);
 
   // Handle image load state
   const handleImageLoad = useCallback(() => {

@@ -1,15 +1,24 @@
-import type { Metadata } from "next";
 import { Inter } from 'next/font/google';
 import './globals.css';
+import type { Metadata } from 'next';
 
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
 });
 
+
 export const metadata: Metadata = {
-  title: "Batu Vespa Fest",
-  description: "Batu Vespa Fest 2025",
+  title: 'Batu Vespa Fest',
+  description: 'Batu Vespa Fest 2025',
+  icons: {
+    icon: [
+      { url: '/icon-scooter.png', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/icon-scooter.png', type: 'image/png' },
+    ],
+  },
 };
 
 export default function RootLayout({
