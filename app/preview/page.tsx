@@ -141,8 +141,9 @@ function CertificateContent() {
               // Draw description with subtle outline for better readability
               ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
               ctx.lineWidth = 2;
-              ctx.strokeText(desc, descX, descY);
-              ctx.fillText(desc, descX, descY);
+              const descText = desc.toUpperCase();
+              ctx.strokeText(descText, descX, descY);
+              ctx.fillText(descText, descX, descY);
             }
             
             resolve();
@@ -199,16 +200,16 @@ function CertificateContent() {
       // Trigger download
       document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
       
-      // Clean up
-      // Clean up and navigate to thank you page after a short delay
+      // Clean up and navigate to thank you page after a longer delay
+      // to ensure download dialog stays open on Safari Mobile
       setTimeout(() => {
-        document.body.removeChild(link);
         URL.revokeObjectURL(url);
         setIsLoading(false);
         setIsDownloading(false);
         router.push('/thankyou');
-      }, 300); // Slightly longer delay to ensure download starts
+      }, 2000); // increased delay for Safari Mobile compatibility
       
     } catch (error) {
       console.error('Error generating certificate:', error);
@@ -330,7 +331,7 @@ function CertificateContent() {
                       width: '80%'
                     }}
                   >
-                    <p className="certificate-desc text-[8px] md:text-2xl text-gray-700">{desc}</p>
+                    <p className="certificate-desc text-[8px] uppercase md:text-2xl text-gray-700">{desc}</p>
                   </div>
                 )}
               </div>
