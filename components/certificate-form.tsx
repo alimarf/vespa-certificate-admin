@@ -1,72 +1,84 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export function CertificateForm() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    namaPeserta: '',
-    description: ''
+    namaPeserta: "",
+    description: "",
   });
-  
+
   const [errors, setErrors] = useState({
-    namaPeserta: '',
-    description: ''
+    namaPeserta: "",
+    description: "",
   });
-  
+
   const MAX_NAMA_PESERTA = 15;
   const MAX_DESCRIPTION = 20;
 
   const validateForm = () => {
     let isValid = true;
-    const newErrors = { namaPeserta: '', description: '' };
-    
+    const newErrors = { namaPeserta: "", description: "" };
+
     if (formData.namaPeserta.length > MAX_NAMA_PESERTA) {
       newErrors.namaPeserta = `Maksimal ${MAX_NAMA_PESERTA} karakter`;
       isValid = false;
     }
-    
+
     if (formData.description.length > MAX_DESCRIPTION) {
       newErrors.description = `Maksimal ${MAX_DESCRIPTION} karakter`;
       isValid = false;
     }
-    
+
     setErrors(newErrors);
     return isValid;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
-    
-    router.push(`/preview?namaPeserta=${encodeURIComponent(formData.namaPeserta)}&desc=${encodeURIComponent(formData.description)}`);
+
+    router.push(
+      `/preview?namaPeserta=${encodeURIComponent(
+        formData.namaPeserta
+      )}&desc=${encodeURIComponent(formData.description)}`
+    );
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   return (
     <Card className="w-full max-w-md mx-auto border-0 shadow-2xl overflow-hidden bg-white rounded-2xl">
       <div className="px-6 pt-6 text-center">
-        <h2 className="text-2xl font-bold font-sans text-gray-800">Batu Vespa Fest 2025</h2>
-        <p className="text-sm text-gray-600 mt-1">Buat sertifikat kerenmu sekarang!</p>
+        <h2 className="text-2xl font-bold font-sans text-gray-800">
+          Batu Vespa Fest 2025
+        </h2>
+        <p className="text-sm text-gray-600 mt-1">
+          Buat sertifikat kerenmu sekarang!
+        </p>
       </div>
-      
+
       <CardContent className="p-6 pt-2">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <label htmlFor="namaPeserta" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="namaPeserta"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Nama Kamu
               </label>
               <span className="text-xs text-gray-500">
@@ -82,19 +94,26 @@ export function CertificateForm() {
                 onChange={handleChange}
                 maxLength={MAX_NAMA_PESERTA}
                 className={`w-full px-4 py-3 rounded-lg border-2 ${
-                  errors.namaPeserta ? 'border-red-400' : 'border-gray-200'
+                  errors.namaPeserta ? "border-red-400" : "border-gray-200"
                 } focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 bg-white`}
                 required
               />
               {errors.namaPeserta && (
-                <p className="mt-1 text-xs text-red-500">{errors.namaPeserta}</p>
+                <p className="mt-1 text-xs text-red-500">
+                  {errors.namaPeserta}
+                </p>
               )}
             </div>
           </div>
-          
-          <div className="space-y-3">
+
+          <div className="mt-4"></div>
+
+          <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="description"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Asal / Club
               </label>
               <span className="text-xs text-gray-500">
@@ -110,22 +129,28 @@ export function CertificateForm() {
                 onChange={handleChange}
                 maxLength={MAX_DESCRIPTION}
                 className={`w-full px-4 py-3 rounded-lg border-2 ${
-                  errors.description ? 'border-red-400' : 'border-gray-200'
+                  errors.description ? "border-red-400" : "border-gray-200"
                 } focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 bg-white`}
                 required
               />
               {errors.description && (
-                <p className="mt-1 text-xs text-red-500">{errors.description}</p>
+                <p className="mt-1 text-xs text-red-500">
+                  {errors.description}
+                </p>
               )}
             </div>
           </div>
-          
-          <button
+
+          {/* <Button
             type="submit"
             className="w-full bg-gradient-to-r from-red-600 to-red-500 text-white py-3 px-6 rounded-lg font-medium hover:from-red-700 hover:to-red-600 transition-all duration-200 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 shadow-md hover:shadow-lg"
           >
             Buat Sertifikatku! 🚀
-          </button>
+          </Button> */}
+
+          <Button type="submit" className="w-full bg-gray-600 text-white mt-5 ">
+            Buat Sertifikatku! 🚀
+          </Button>
         </form>
       </CardContent>
     </Card>

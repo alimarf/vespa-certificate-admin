@@ -17,7 +17,7 @@ export default function ThankYouPage() {
       
       {/* Content */}
       <div className="relative z-20 text-center max-w-2xl mx-4">
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl p-8">
+        <div className="bg-white backdrop-blur-sm rounded-2xl shadow-2xl p-8">
           <div className="mb-6">
             <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">

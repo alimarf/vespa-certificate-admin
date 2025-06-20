@@ -357,7 +357,7 @@ function CertificateContent() {
             <Button 
               onClick={handleDownload}
               disabled={isLoading || isDownloading || !isImageLoaded} 
-              className={`w-full sm:w-auto relative bg-gradient-to-r from-gray-600 to-gray-500 hover:from-gray-700 hover:to-gray-600 ${
+              className={`w-full sm:w-auto text-white relative bg-gray-600  ${
                 isLoading || isDownloading ? 'opacity-75 cursor-not-allowed' : ''
               }`}
             >
