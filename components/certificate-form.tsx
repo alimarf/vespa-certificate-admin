@@ -56,13 +56,13 @@ export function CertificateForm() {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto border-0 shadow-lg overflow-hidden bg-gradient-to-br from-white/90 to-gray-50/90">
-      <div className="pl-6 text-black">
-        <h2 className="text-2xl font-bold font-sans">Batu Vespa Fest 2025</h2>
-        <p className="text-sm opacity-90 mt-1">Buat sertifikat kerenmu sekarang!</p>
+    <Card className="w-full max-w-md mx-auto border-0 shadow-2xl overflow-hidden bg-white rounded-2xl">
+      <div className="px-6 pt-6 text-center">
+        <h2 className="text-2xl font-bold font-sans text-gray-800">Batu Vespa Fest 2025</h2>
+        <p className="text-sm text-gray-600 mt-1">Buat sertifikat kerenmu sekarang!</p>
       </div>
       
-      <CardContent className="p-6">
+      <CardContent className="p-6 pt-2">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-3">
             <div className="flex justify-between items-center">
@@ -81,9 +81,9 @@ export function CertificateForm() {
                 value={formData.namaPeserta}
                 onChange={handleChange}
                 maxLength={MAX_NAMA_PESERTA}
-                className={`w-full px-4 py-3 rounded-lg border ${
-                  errors.namaPeserta ? 'border-red-400' : 'border-gray-300'
-                } focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200`}
+                className={`w-full px-4 py-3 rounded-lg border-2 ${
+                  errors.namaPeserta ? 'border-red-400' : 'border-gray-200'
+                } focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 bg-white`}
                 required
               />
               {errors.namaPeserta && (
@@ -109,9 +109,9 @@ export function CertificateForm() {
                 value={formData.description}
                 onChange={handleChange}
                 maxLength={MAX_DESCRIPTION}
-                className={`w-full px-4 py-3 rounded-lg border ${
-                  errors.description ? 'border-red-400' : 'border-gray-300'
-                } focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200`}
+                className={`w-full px-4 py-3 rounded-lg border-2 ${
+                  errors.description ? 'border-red-400' : 'border-gray-200'
+                } focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 bg-white`}
                 required
               />
               {errors.description && (
@@ -122,7 +122,7 @@ export function CertificateForm() {
           
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-gray-600 to-gray-500 text-white py-3 px-6 rounded-lg font-medium hover:from-red-700 hover:to-red-600 transition-all duration-200 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 shadow-md hover:shadow-lg"
+            className="w-full bg-gradient-to-r from-red-600 to-red-500 text-white py-3 px-6 rounded-lg font-medium hover:from-red-700 hover:to-red-600 transition-all duration-200 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 shadow-md hover:shadow-lg"
           >
             Buat Sertifikatku! 🚀
           </button>

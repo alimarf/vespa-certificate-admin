@@ -274,7 +274,7 @@ function CertificateContent() {
   }, [handleImageLoad]);
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen relative flex items-center justify-center p-4 md:p-8">
       {/* Background Image */}
       <div 
         className="fixed inset-0 bg-cover bg-center bg-no-repeat z-0"
@@ -285,8 +285,8 @@ function CertificateContent() {
       <div className="fixed inset-0 bg-black/30 z-10"></div>
       
       {/* Content */}
-      <div className="relative z-20 w-full">
-        <div className="max-w-4xl mx-auto bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-8">
+      <div className="relative z-20 w-full max-w-4xl">
+        <div className="bg-white rounded-2xl shadow-2xl p-6 md:p-8">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold mb-2 text-gray-800">Pratinjau Sertifikat</h1>
             <p className="text-gray-600">
@@ -294,8 +294,7 @@ function CertificateContent() {
             </p>
           </div>
           
-          <div className="relative rounded-xl shadow-lg overflow-hidden">
-            <div className="absolute inset-0 bg-white/30 backdrop-blur-sm"></div>
+          <div className="relative rounded-xl shadow-lg overflow-hidden bg-white">
             <div 
               ref={certificateRef} 
               className="relative w-full aspect-[3/2] bg-cover bg-center"
@@ -352,7 +351,7 @@ function CertificateContent() {
           </div>
           
           <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
-            <Button asChild variant="outline" className="w-full sm:w-auto bg-white/80 hover:bg-white">
+            <Button asChild variant="outline" className="w-full sm:w-auto bg-white hover:bg-gray-50">
               <Link href="/">Kembali ke Form</Link>
             </Button>
             <Button 
@@ -394,7 +393,7 @@ const CertificateContentDynamic = dynamic(
         {/* Overlay */}
         <div className="fixed inset-0 bg-black/30 z-10"></div>
         
-        <div className="relative z-20 text-center bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-2xl">
+        <div className="relative z-20 text-center bg-white rounded-2xl p-8 shadow-2xl">
           <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-gray-800 mx-auto mb-4"></div>
           <p className="text-gray-800 font-medium">Memuat sertifikat...</p>
         </div>
