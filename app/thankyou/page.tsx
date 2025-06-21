@@ -9,7 +9,7 @@ export default function ThankYouPage() {
       {/* Background Image */}
       <div 
         className="fixed inset-0 bg-cover bg-center bg-no-repeat z-0"
-        style={{ backgroundImage: 'url(/vespa-bg.jpg)' }}
+        style={{ backgroundImage: 'url(/vespa-indo-bg.jpg)' }}
       ></div>
       
       {/* Overlay */}
