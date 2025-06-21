@@ -16,6 +16,8 @@ export function CertificateForm() {
     namaPeserta: "",
     description: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const MAX_NAMA_PESERTA = 15;
   const MAX_DESCRIPTION = 20;
@@ -38,18 +40,54 @@ export function CertificateForm() {
     return isValid;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError("");
 
     if (!validateForm()) {
       return;
     }
 
-    router.push(
-      `/preview?namaPeserta=${encodeURIComponent(
-        formData.namaPeserta
-      )}&desc=${encodeURIComponent(formData.description)}`
-    );
+    setIsSubmitting(true);
+
+    try {
+      // Prepare the data for submission
+      const payload = {
+        namaPeserta: formData.namaPeserta,
+        description: formData.description
+      };
+      
+      console.log('Submitting form with data:', payload);
+      
+      // Submit to our Next.js API route
+      const response = await fetch('/api/submit-form', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to submit form');
+      }
+      
+      const result = await response.json();
+      console.log('Form submission successful:', result);
+      
+      // Navigate to preview page on successful submission
+      router.push(
+        `/preview?namaPeserta=${encodeURIComponent(
+          formData.namaPeserta
+        )}&desc=${encodeURIComponent(formData.description)}`
+      );
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setSubmitError('Failed to submit form. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -141,16 +179,29 @@ export function CertificateForm() {
             </div>
           </div>
 
-          {/* <Button
-            type="submit"
-            className="w-full bg-gradient-to-r from-red-600 to-red-500 text-white py-3 px-6 rounded-lg font-medium hover:from-red-700 hover:to-red-600 transition-all duration-200 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 shadow-md hover:shadow-lg"
-          >
-            Buat Sertifikatku! 🚀
-          </Button> */}
+          <div className="mt-4"></div>
 
-          <Button type="submit" className="w-full bg-gray-600 text-white mt-5 ">
-            Buat Sertifikatku! 🚀
-          </Button>
+          <div className="space-y-2">
+            <Button 
+              type="submit"
+              disabled={isSubmitting} 
+              className={`w-full text-white relative bg-gray-600 ${
+                isSubmitting ? 'opacity-75 cursor-not-allowed' : ''
+              }`}
+            >
+              {isSubmitting ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></span>
+                  <span>Memproses Sertifikat...</span>
+                </span>
+              ) : (
+                'Buat Sertifikat 🚀'
+              )}
+            </Button>
+            {submitError && (
+              <p className="text-red-500 text-sm text-center">{submitError}</p>
+            )}
+          </div>
         </form>
       </CardContent>
     </Card>

@@ -19,6 +19,9 @@ export const metadata: Metadata = {
     apple: [
       { url: '/icon-scooter.png', type: 'image/png' },
     ],
+    shortcut: [
+      { url: '/icon-scooter.png', type: 'image/png' },
+    ],
   },
 };
 
