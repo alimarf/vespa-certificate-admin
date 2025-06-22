@@ -19,9 +19,9 @@ export default function Home() {
         <div className="max-w-xl mx-auto">
           {/* Glass Card */}
           <div className="backdrop-blur-md bg-white/30 rounded-2xl shadow-2xl p-8">
-            <div className="text-center mb-8">
+            {/* <div className="text-center mb-8">
               <h1 className="text-4xl font-bold text-white drop-shadow-lg">Batu Vespa Fest 2025</h1>
-            </div>
+            </div> */}
             <CertificateForm />
           </div>
         </div>
