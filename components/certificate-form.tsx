@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useState } from "react";
@@ -57,7 +58,7 @@ export function CertificateForm() {
         description: formData.description
       };
       
-      console.log('Submitting form with data:', payload);
+      // console.log('Submitting form with data:', payload);
       
       // Submit to our Next.js API route
       const response = await fetch('/api/submit-form', {
@@ -74,7 +75,7 @@ export function CertificateForm() {
       }
       
       const result = await response.json();
-      console.log('Form submission successful:', result);
+      // console.log('Form submission successful:', result);
       
       // Navigate to preview page on successful submission
       router.push(
@@ -83,7 +84,7 @@ export function CertificateForm() {
         )}&desc=${encodeURIComponent(formData.description)}`
       );
     } catch (error) {
-      console.error('Error submitting form:', error);
+      // console.error('Error submitting form:', error);
       setSubmitError('Failed to submit form. Please try again.');
     } finally {
       setIsSubmitting(false);

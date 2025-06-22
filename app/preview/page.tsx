@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -65,7 +66,7 @@ function CertificateContent() {
         document.fonts.add(loadedFont);
         fontLoaded = true;
       } catch (fontError) {
-        console.error('Error loading font:', fontError);
+        // console.error('Error loading font:', fontError);
         // Continue with fallback font
       }
       
@@ -148,7 +149,7 @@ function CertificateContent() {
             
             resolve();
           } catch (drawError) {
-            console.error('Error drawing on canvas:', drawError);
+            // console.error('Error drawing on canvas:', drawError);
             reject(new Error('Failed to draw certificate'));
           }
         };
@@ -212,7 +213,7 @@ function CertificateContent() {
       }, 2000); // increased delay for Safari Mobile compatibility
       
     } catch (error) {
-      console.error('Error generating certificate:', error);
+      // console.error('Error generating certificate:', error);
       setIsLoading(false);
       setIsDownloading(false);
       
@@ -233,7 +234,7 @@ function CertificateContent() {
         link.click();
         document.body.removeChild(link);
       } catch (fallbackError) {
-        console.error('Fallback download failed:', fallbackError);
+        // console.error('Fallback download failed:', fallbackError);
       } finally {
         setIsLoading(false);
         setIsDownloading(false);
@@ -257,7 +258,7 @@ function CertificateContent() {
     
     const handleLoad = () => handleImageLoad();
     const handleError = () => {
-      console.error('Error loading certificate image');
+      // console.error('Error loading certificate image');
       setIsLoading(false);
     };
     
@@ -344,7 +345,7 @@ function CertificateContent() {
               className="hidden"
               onLoad={handleImageLoad}
               onError={() => {
-                console.error('Error loading certificate image');
+                // console.error('Error loading certificate image');
                 setIsLoading(false);
               }}
             />

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { google, sheets_v4 } from 'googleapis';
 import { GoogleAuth } from 'google-auth-library';
@@ -12,16 +13,16 @@ async function getGoogleSheetClient(): Promise<sheets_v4.Sheets> {
   try {
     // Check if we have credentials
     if (!process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
-      console.error('❌ Google service account key not found in environment variables');
+    //   // console.error('❌ Google service account key not found in environment variables');
       throw new Error('Missing Google service account credentials');
     }
 
     let credentials;
     try {
       credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
-      console.log('✅ Successfully parsed service account key');
+    //   console.log('✅ Successfully parsed service account key');
     } catch (parseError) {
-      console.error('❌ Failed to parse GOOGLE_SERVICE_ACCOUNT_KEY:', parseError);
+    //   // console.error('❌ Failed to parse GOOGLE_SERVICE_ACCOUNT_KEY:', parseError);
       throw new Error('Invalid service account key format');
     }
     
@@ -47,11 +48,11 @@ async function getGoogleSheetClient(): Promise<sheets_v4.Sheets> {
       
       return sheets;
     } catch (authError) {
-      console.error('❌ Authentication failed:', authError);
+    //   // console.error('❌ Authentication failed:', authError);
       throw authError;
     }
   } catch (error) {
-    console.error('❌ Error in getGoogleSheetClient:', error);
+    // // console.error('❌ Error in getGoogleSheetClient:', error);
     throw new Error(`Failed to create Google Sheets client: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
@@ -103,17 +104,17 @@ export async function POST(request: Request) {
         },
       });
       
-      console.log('Data successfully appended to Google Sheet');
+    //   console.log('Data successfully appended to Google Sheet');
     } catch (sheetError) {
       // Log the error but don't fail the request
-      console.error('Error appending to Google Sheet:', sheetError);
+      // console.error('Error appending to Google Sheet:', sheetError);
       // If we're missing credentials, we'll just log the data
-      console.log('Would append to Google Sheet:', values);
+    //   console.log('Would append to Google Sheet:', values);
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error submitting form data:', error);
+    // // console.error('Error submitting form data:', error);
     return NextResponse.json(
       { error: 'Failed to submit form data' },
       { status: 500 }
