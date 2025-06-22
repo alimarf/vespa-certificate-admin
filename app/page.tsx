@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from 'framer-motion';
 import { CertificateForm } from "@/components/certificate-form";
 
 export default function Home() {
@@ -17,13 +18,21 @@ export default function Home() {
       {/* Content */}
       <div className="relative z-20 w-full px-4">
         <div className="max-w-xl mx-auto">
-          {/* Glass Card */}
-          <div className="backdrop-blur-md bg-white/30 rounded-2xl shadow-2xl p-8">
-            {/* <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold text-white drop-shadow-lg">Batu Vespa Fest 2025</h1>
-            </div> */}
-            <CertificateForm />
-          </div>
+          {/* Glass Card with Animation */}
+          <motion.div 
+            className="backdrop-blur-md bg-white/30 rounded-2xl shadow-2xl p-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: "easeOut" }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+            >
+              <CertificateForm />
+            </motion.div>
+          </motion.div>
         </div>
       </div>
     </div>
