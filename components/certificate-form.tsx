@@ -61,20 +61,20 @@ export function CertificateForm() {
       // console.log('Submitting form with data:', payload);
       
       // Submit to our Next.js API route
-      const response = await fetch('/api/submit-form', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+      // const response = await fetch('/api/submit-form', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify(payload),
+      // });
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to submit form');
-      }
+      // if (!response.ok) {
+      //   const errorData = await response.json();
+      //   throw new Error(errorData.error || 'Failed to submit form');
+      // }
       
-      const result = await response.json();
+      // const result = await response.json();
       // console.log('Form submission successful:', result);
       
       // Navigate to preview page on successful submission
@@ -103,7 +103,7 @@ export function CertificateForm() {
     <Card className="w-full max-w-md mx-auto border-0 shadow-2xl overflow-hidden bg-white rounded-2xl">
       <div className="px-6 pt-6 text-center">
         <h2 className="text-2xl font-bold font-sans text-gray-800">
-          Batu Vespa Fest 2025
+          Batu Vespa Fest 2025 - Admin
         </h2>
         <p className="text-sm text-gray-600 mt-1">
           Buat sertifikat kerenmu sekarang!

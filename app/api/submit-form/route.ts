@@ -13,21 +13,20 @@ async function getGoogleSheetClient(): Promise<sheets_v4.Sheets> {
   try {
     // Check if we have credentials
     if (!process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
-    //   // console.error('❌ Google service account key not found in environment variables');
+      console.error('❌ Google service account key not found in environment variables');
       throw new Error('Missing Google service account credentials');
     }
 
     let credentials;
     try {
       credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
-    //   console.log('✅ Successfully parsed service account key');
     } catch (parseError) {
-    //   // console.error('❌ Failed to parse GOOGLE_SERVICE_ACCOUNT_KEY:', parseError);
+      console.error('❌ Failed to parse GOOGLE_SERVICE_ACCOUNT_KEY:', parseError);
       throw new Error('Invalid service account key format');
     }
     
     try {
-      // Initialize auth with credentials
+      // Create a new auth instance for each request (no global state)
       const auth = new GoogleAuth({
         scopes: ['https://www.googleapis.com/auth/spreadsheets'],
         credentials: {
@@ -38,24 +37,26 @@ async function getGoogleSheetClient(): Promise<sheets_v4.Sheets> {
 
       console.log('🔑 Authentication successful');
       
-      // Create the sheets client with proper typing
-      const sheets = google.sheets('v4');
+      // Get auth client for this request
+      const authClient = await auth.getClient();
       
-      // Set the auth as a global default
-      google.options({
-        auth: auth as any, // Type assertion needed due to complex auth types
+      // Create and return sheets client with this auth client
+      return google.sheets({
+        version: 'v4',
+        auth: authClient as any // Type assertion needed due to complex auth types
       });
-      
-      return sheets;
     } catch (authError) {
-    //   // console.error('❌ Authentication failed:', authError);
+      console.error('❌ Authentication failed:', authError);
       throw authError;
     }
   } catch (error) {
-    // // console.error('❌ Error in getGoogleSheetClient:', error);
+    console.error('❌ Error in getGoogleSheetClient:', error);
     throw new Error(`Failed to create Google Sheets client: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
+
+// Helper function to wait for a specified time
+const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export async function POST(request: Request) {
   try {
@@ -91,32 +92,63 @@ export async function POST(request: Request) {
     ];
 
     try {
-      // Get Google Sheets client
-      const sheets = await getGoogleSheetClient();
-      
-      // Append the data to the sheet
-      await sheets.spreadsheets.values.append({
-        spreadsheetId: SPREADSHEET_ID,
-        range: `${SHEET_NAME}!A:C`,
-        valueInputOption: 'USER_ENTERED',
-        requestBody: {
-          values,
-        },
-      });
-      
-    //   console.log('Data successfully appended to Google Sheet');
-    } catch (sheetError) {
-      // Log the error but don't fail the request
-      // console.error('Error appending to Google Sheet:', sheetError);
-      // If we're missing credentials, we'll just log the data
-    //   console.log('Would append to Google Sheet:', values);
-    }
+      // Retry mechanism for Google Sheets operations
+      const MAX_RETRIES = 3;
+      let retryCount = 0;
+      let success = false;
+      let lastError: any;
 
-    return NextResponse.json({ success: true });
+      while (retryCount < MAX_RETRIES && !success) {
+        try {
+          // Get a fresh Google Sheets client for each attempt
+          const sheets = await getGoogleSheetClient();
+          
+          // Append the data to the sheet
+          await sheets.spreadsheets.values.append({
+            spreadsheetId: SPREADSHEET_ID,
+            range: `${SHEET_NAME}!A:C`,
+            valueInputOption: 'USER_ENTERED',
+            requestBody: {
+              values,
+            },
+          });
+          
+          console.log(`✅ Data successfully appended to Google Sheet (attempt ${retryCount + 1})`);
+          success = true;
+        } catch (error) {
+          lastError = error;
+          retryCount++;
+          console.error(`❌ Attempt ${retryCount} failed:`, error);
+          
+          if (retryCount < MAX_RETRIES) {
+            // Exponential backoff: wait longer between each retry
+            const backoffTime = 200 * Math.pow(2, retryCount - 1);
+            console.log(`Retrying in ${backoffTime}ms...`);
+            await wait(backoffTime);
+          }
+        }
+      }
+
+      if (!success) {
+        console.error('❌ All retry attempts failed:', lastError);
+        return NextResponse.json(
+          { error: 'Failed to save data after multiple attempts' },
+          { status: 500 }
+        );
+      }
+      
+      return NextResponse.json({ success: true });
+    } catch (sheetError) {
+      console.error('❌ Error in sheet operations:', sheetError);
+      return NextResponse.json(
+        { error: 'Failed to save data to Google Sheet' },
+        { status: 500 }
+      );
+    }
   } catch (error) {
-    // // console.error('Error submitting form data:', error);
+    console.error('❌ Error in POST handler:', error);
     return NextResponse.json(
-      { error: 'Failed to submit form data' },
+      { error: 'Failed to process request' },
       { status: 500 }
     );
   }
