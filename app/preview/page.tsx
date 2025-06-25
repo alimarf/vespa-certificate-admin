@@ -163,7 +163,7 @@ function CertificateContent() {
         img.addEventListener('load', onLoad);
         img.addEventListener('error', onError);
         
-        img.src = '/template-vespa-certificate.jpeg';
+        img.src = '/vespa-template-fix.jpeg';
       });
       
       // Convert canvas to blob with consistent quality
@@ -300,7 +300,7 @@ function CertificateContent() {
             <div 
               ref={certificateRef} 
               className="relative w-full aspect-[3/2] bg-cover bg-center"
-              style={{ backgroundImage: `url(/template-vespa-certificate.jpeg)` }}
+              style={{ backgroundImage: `url(/vespa-template-fix.jpeg)` }}
             >
             {/* Overlay text that matches canvas rendering */}
             {isImageLoaded && (
@@ -340,7 +340,7 @@ function CertificateContent() {
             
             {/* Hidden image for loading state */}
             <img 
-              src="/template-vespa-certificate.jpeg" 
+              src="/vespa-template-fix.jpeg" 
               alt="" 
               className="hidden"
               onLoad={handleImageLoad}
